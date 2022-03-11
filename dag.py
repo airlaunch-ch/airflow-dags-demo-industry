@@ -65,7 +65,7 @@ with DAG(
     'opc',
     default_args=default_args,
     description='Extract Production Data',
-    schedule_interval=timedelta(week=1),
+    schedule_interval=timedelta(weeks=1),
     start_date=datetime(2022, 1, 16, 1, 0, 0),
     catchup=True,
 ) as dag:
