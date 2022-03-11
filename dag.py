@@ -155,6 +155,7 @@ with DAG(
     fetchInputProperties = PythonOperator(
         task_id='load_input_properties',
         python_callable=extract_postgres_table,
+        queue='local',
         op_kwargs={
             "source_postgres_conn_id": 'postgres_quality',
             "source_table": "input_quality_shifted",
@@ -164,3 +165,6 @@ with DAG(
             "end_time": "{{ data_interval_end.to_datetime_string() }}",
         }
     )
+
+if __name__ == "__main__":
+    dag.cli()
