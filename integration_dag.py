@@ -65,8 +65,10 @@ with DAG(
     default_args=default_args,
     description='Extract Production Data',
     schedule_interval=timedelta(hours=12),
-    start_date=datetime(2022, 1, 16, 1, 0, 0),
+    start_date=datetime(2021, 11, 21, 1, 0, 0),
     catchup=True,
+    max_active_runs=1,
+    max_active_tasks=10,
 ) as dag:
 
     fetchInputQuality = PythonOperator(
