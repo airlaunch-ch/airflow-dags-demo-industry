@@ -22,7 +22,7 @@ from typing import Dict, Optional
 
 from asyncua import Client
 
-from airflow.hooks.dbapi import BaseHook
+from airflow.providers.common.sql.hooks.sql import BaseHook
 from airflow.models.connection import Connection
 
 import asyncio

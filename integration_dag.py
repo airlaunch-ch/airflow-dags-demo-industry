@@ -62,7 +62,7 @@ default_args = {
     'retry_delay': timedelta(minutes=2),
 }
 with DAG(
-    'opc',
+    'manufacturing_data_integration',
     default_args=default_args,
     description='Extract Production Data',
     schedule_interval=timedelta(hours=12),
