@@ -22,7 +22,9 @@ floationColumns = [
 ]
 
 def cloud_training():
+    print("**************************************")
     print("Doing some important work in the cloud")
+    print("**************************************")
 
 def extract_xlsx_from_ftp(postgres_conn_id: str, postgres_table: str, ftp_conn_id: str, remote_full_path: str, sheet_name: str, column_names: list, dtype: dict, start_time: str, end_time: str):
     ftp_hook = FTPHook(
