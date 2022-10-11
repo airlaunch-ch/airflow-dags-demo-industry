@@ -64,7 +64,7 @@ with DAG(
     'manufacturing_data_integration',
     default_args=default_args,
     description='Extract Production Data',
-    schedule_interval=timedelta(hours=12),
+    schedule_interval=timedelta(hours=1),
     start_date=datetime(2021, 11, 21, 1, 0, 0),
     catchup=True,
     max_active_runs=1,
