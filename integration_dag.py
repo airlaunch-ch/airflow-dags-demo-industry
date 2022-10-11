@@ -21,6 +21,9 @@ floationColumns = [
     {"airflowNodeId": "1014", "levelNodeId": "1021", "colNo": 7},
 ]
 
+def cloud_training():
+    print("Doing some important work in the cloud")
+
 def extract_xlsx_from_ftp(postgres_conn_id: str, postgres_table: str, ftp_conn_id: str, remote_full_path: str, sheet_name: str, column_names: list, dtype: dict, start_time: str, end_time: str):
     ftp_hook = FTPHook(
         ftp_conn_id
@@ -70,7 +73,7 @@ with DAG(
     max_active_runs=1,
     max_active_tasks=10,
 ) as dag:
-
+    
     fetchInputQuality = PythonOperator(
        task_id='extract_input_quality',
        python_callable=extract_xlsx_from_ftp,
@@ -87,6 +90,22 @@ with DAG(
            "postgres_conn_id": "postgres_warehouse"
        }
     )
+
+    fetchInputProperties = PythonOperator(
+        task_id='load_input_properties',
+        python_callable=extract_postgres_table,
+        queue='local',
+        op_kwargs={
+            "source_postgres_conn_id": 'postgres_quality',
+            "source_table": "input_quality_shifted",
+            "dest_postgres_conn_id": 'postgres_warehouse',
+            "dest_table": "input_properties",
+            "start_time": "{{ data_interval_start.to_datetime_string() }}",
+            "end_time": "{{ data_interval_end.to_datetime_string() }}",
+        }
+    )
+    fetchInputQuality >> fetchInputProperties
+
 
     fetchIncidentReports = PythonOperator(
        task_id='fetch_incident_reports',
@@ -105,7 +124,11 @@ with DAG(
        }
     )
 
+    fetchInputProperties >> fetchIncidentReports
+
+    column_tasks = []
     for column in floationColumns:
+        
         extractColumnAirflow = OPCUAToPostgresOperator(
             task_id='extract_opc_column_airflow_{}'.format(column["colNo"]),
             queue='local',
@@ -120,6 +143,7 @@ with DAG(
             },
             postgres_conn_id="postgres_warehouse",
         )
+        column_tasks.append(extractColumnAirflow)
 
         extractColumnLevel = OPCUAToPostgresOperator(
             task_id='extract_opc_column_level_{}'.format(column["colNo"]),
@@ -135,6 +159,9 @@ with DAG(
             },
             postgres_conn_id="postgres_warehouse",
         )
+        column_tasks.append(extractColumnLevel)
+
+    fetchIncidentReports >> column_tasks
 
     fetchOutputQuality = PythonOperator(
         task_id='extract_output_quality',
@@ -152,20 +179,14 @@ with DAG(
             "postgres_conn_id": "postgres_warehouse"
         }
     )
+    column_tasks >> fetchOutputQuality
 
-    fetchInputProperties = PythonOperator(
-        task_id='load_input_properties',
-        python_callable=extract_postgres_table,
-        queue='local',
-        op_kwargs={
-            "source_postgres_conn_id": 'postgres_quality',
-            "source_table": "input_quality_shifted",
-            "dest_postgres_conn_id": 'postgres_warehouse',
-            "dest_table": "input_properties",
-            "start_time": "{{ data_interval_start.to_datetime_string() }}",
-            "end_time": "{{ data_interval_end.to_datetime_string() }}",
-        }
+
+    cloudProcessing = PythonOperator(
+        task_id='cloud_model_training',
+        python_callable=cloud_training
     )
+    fetchOutputQuality >> cloudProcessing
 
 if __name__ == "__main__":
     dag.cli()

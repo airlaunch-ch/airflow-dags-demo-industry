@@ -21,9 +21,10 @@ from copy import deepcopy
 from typing import Dict, Optional
 
 from asyncua import Client
-
-#from airflow.providers.common.sql.hooks.sql import BaseHook
-from airflow.hooks.dbapi import BaseHook
+try:
+    from airflow.providers.common.sql.hooks.sql import BaseHook
+except:
+    from airflow.hooks.dbapi import BaseHook
 from airflow.models.connection import Connection
 
 import asyncio
