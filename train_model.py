@@ -87,8 +87,6 @@ with DAG(
     catchup=True,
 ) as dag:
 
-
-
     create_image_dataset_job = CreateDatasetOperator(
         task_id="image_dataset",
         dataset=IMAGE_DATASET,
